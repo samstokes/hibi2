@@ -42,7 +42,6 @@ fn main() {
             .expect("Error loading tasks"),
         Some(source) => tasks_with_ext_query
             .filter(ext_source_name.eq(source))
-            .limit(5)
             .load::<(Task, ExtTask)>(&connection)
             .expect("Error loading tasks"),
     };
