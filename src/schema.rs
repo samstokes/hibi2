@@ -58,14 +58,15 @@ table! {
     #[sql_name = "task"]
     tasks (id) {
         id -> Int4,
-        //user -> Int8,
+        #[sql_name = "user"]
+        user_id -> Int8,
         title -> Varchar,
-        //pomos -> Int8,
+        pomos -> Int8,
         scheduled_for -> Timestamp,
         done_at -> Nullable<Timestamp>,
-        //active -> Bool,
-        //order -> Int8,
-        //schedule -> Varchar,
+        active -> Bool,
+        order -> Int8,
+        schedule -> Varchar,
         #[sql_name = "ext_task"]
         ext_task_id -> Nullable<Int8>,
     }

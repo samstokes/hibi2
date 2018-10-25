@@ -3,12 +3,54 @@
 extern crate chrono;
 use chrono::NaiveDateTime;
 
+use diesel::{
+    deserialize::{FromSql, Result as DResult},
+    pg::Pg,
+    sql_types,
+};
+
+#[derive(Debug, FromSqlRow)]
+pub enum Schedule {
+    Once,
+    Daily,
+    Weekly,
+    Fortnightly,
+}
+
+impl std::str::FromStr for Schedule {
+    type Err = String;
+
+    fn from_str(text: &str) -> Result<Self, String> {
+        use self::Schedule::*;
+
+        match &text as &str {
+            "Once" => Ok(Once),
+            "Daily" => Ok(Daily),
+            "Weekly" => Ok(Weekly),
+            "Fortnightly" => Ok(Fortnightly),
+            _ => Err(format!("invalid schedule \"{}\"", text)),
+        }
+    }
+}
+
+impl FromSql<sql_types::Text, Pg> for Schedule {
+    fn from_sql(bytes: Option<&[u8]>) -> DResult<Self> {
+        let text: DResult<String> = FromSql::<sql_types::Text, Pg>::from_sql(bytes);
+        Ok(text?.parse()?)
+    }
+}
+
 #[derive(Queryable, Debug)]
 pub struct Task {
     pub id: i32,
+    pub user_id: i64,
     pub title: String,
+    pub pomos: i64,
     pub scheduled_for: NaiveDateTime,
     pub done_at: Option<NaiveDateTime>,
+    pub active: bool,
+    pub order: i64,
+    pub schedule: Schedule,
     pub ext_task_id: Option<i64>,
 }
 
