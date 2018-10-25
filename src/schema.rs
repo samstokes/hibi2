@@ -72,15 +72,17 @@ table! {
     }
 }
 
-//table! {
-//user (id) {
-//id -> Int4,
-//ident -> Varchar,
-//password -> Nullable<Varchar>,
-//time_zone -> Nullable<Varchar>,
-//features -> Varchar,
-//}
-//}
+table! {
+    #[sql_name = "user_with_bigid"]
+    users (id) {
+        #[sql_name = "bigid"]
+        id -> Int8,
+        ident -> Varchar,
+        password -> Nullable<Varchar>,
+        time_zone -> Nullable<Varchar>,
+        features -> Varchar,
+    }
+}
 
 //joinable!(email -> user (user));
 //joinable!(estimate -> task (task));
@@ -88,7 +90,7 @@ table! {
 //joinable!(note -> task (task));
 //joinable!(plan -> user (user));
 joinable!(tasks -> ext_tasks (ext_task_id));
-//joinable!(task -> user (user));
+joinable!(tasks -> users (user_id));
 
-allow_tables_to_appear_in_same_query!(ext_tasks, tasks,);
+allow_tables_to_appear_in_same_query!(ext_tasks, tasks, users,);
 //allow_tables_to_appear_in_same_query!(email, estimate, ext_task, note, plan, task, user,);

@@ -8,28 +8,35 @@ use self::diesel::prelude::*;
 use self::hibi2::*;
 use self::models::*;
 
-// TODO
-use diesel::debug_query;
+use diesel::{debug_query, pg::Pg};
 
 fn main() {
     use hibi2::schema::ext_tasks::dsl::*;
     use hibi2::schema::tasks::dsl::*;
+    use hibi2::schema::users::dsl::*;
 
-    let ext_source = env::args().nth(1);
+    let user_ident = env::args().nth(1).expect("please specify user email");
+    let ext_source = env::args().nth(2);
     let ext_source_hask =
         ext_source.map(|s| format!("ExternalSourceName {{unExternalSourceName = \"{}\"}}", s));
 
     let connection = establish_connection();
 
-    let tasks_with_ext_query = tasks
+    let user_query = users.filter(ident.eq(user_ident)).limit(1);
+
+    println!("{}", debug_query::<Pg, _>(&user_query));
+
+    let user: User = user_query
+        .get_result(&connection)
+        .expect("error loading user");
+    println!("{:?}", user);
+
+    let tasks_with_ext_query = Task::belonging_to(&user)
         .inner_join(ext_tasks)
         .filter(done_at.is_null())
         .order(order);
 
-    println!(
-        "{}",
-        debug_query::<diesel::pg::Pg, _>(&tasks_with_ext_query)
-    );
+    println!("{}", debug_query::<Pg, _>(&tasks_with_ext_query));
 
     let tasks_with_ext = match ext_source_hask {
         None => tasks_with_ext_query

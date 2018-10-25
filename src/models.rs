@@ -1,5 +1,7 @@
 #![allow(proc_macro_derive_resolution_fallback)]
 
+use super::schema::*;
+
 extern crate chrono;
 use chrono::NaiveDateTime;
 
@@ -40,7 +42,8 @@ impl FromSql<sql_types::Text, Pg> for Schedule {
     }
 }
 
-#[derive(Queryable, Debug)]
+#[derive(Identifiable, Queryable, Associations, Debug)]
+#[belongs_to(User)]
 pub struct Task {
     pub id: i32,
     pub user_id: i64,
@@ -61,4 +64,13 @@ pub struct ExtTask {
     pub ext_source_name: String,
     pub ext_url: Option<String>,
     pub ext_status: Option<String>,
+}
+
+#[derive(Identifiable, Queryable, Debug)]
+pub struct User {
+    pub id: i64,
+    pub ident: String,
+    pub password: Option<String>,
+    pub time_zone: Option<String>,
+    pub features: String, // TODO
 }
