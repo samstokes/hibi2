@@ -22,13 +22,11 @@ fn main() {
 
     let connection = establish_connection();
 
-    let user_query = users.filter(ident.eq(user_ident)).limit(1);
+    let user_query = users.filter(ident.eq(user_ident));
 
     println!("{}", debug_query::<Pg, _>(&user_query));
 
-    let user: User = user_query
-        .get_result(&connection)
-        .expect("error loading user");
+    let user: User = user_query.first(&connection).expect("error loading user");
     println!("{:?}", user);
 
     let tasks_with_ext_query = Task::belonging_to(&user)
