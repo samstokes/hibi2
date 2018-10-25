@@ -8,6 +8,7 @@ use self::diesel::prelude::*;
 use self::hibi2::*;
 use self::models::*;
 
+use chrono::FixedOffset;
 use diesel::{debug_query, pg::Pg};
 
 fn main() {
@@ -27,7 +28,8 @@ fn main() {
     println!("{}", debug_query::<Pg, _>(&user_query));
 
     let user: User = user_query.first(&connection).expect("error loading user");
-    println!("{:?}", user);
+    let offset = user.time_zone_offset();
+    println!("{:?} with time zone {:?}", user, offset);
 
     let tasks_with_ext_query = Task::belonging_to(&user)
         .inner_join(ext_tasks)
@@ -46,7 +48,10 @@ fn main() {
             .expect("Error loading tasks"),
     };
 
-    for task_with_ext in tasks_with_ext {
-        println!("{:?}", task_with_ext);
+    for (task, ext_task) in tasks_with_ext {
+        let zoned_task = task.in_time_zone::<FixedOffset>(&offset);
+        let overdue = zoned_task.is_overdue_now();
+        let overdue_label = if overdue { "overdue" } else { "not overdue" };
+        println!("{}: {:?}, {:?}", overdue_label, task, ext_task);
     }
 }
