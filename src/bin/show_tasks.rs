@@ -21,7 +21,10 @@ fn main() {
 
     let connection = establish_connection();
 
-    let tasks_with_ext_query = tasks.inner_join(ext_tasks).filter(done_at.is_null());
+    let tasks_with_ext_query = tasks
+        .inner_join(ext_tasks)
+        .filter(done_at.is_null())
+        .order(order);
 
     println!(
         "{}",
@@ -30,7 +33,6 @@ fn main() {
 
     let tasks_with_ext = match ext_source_hask {
         None => tasks_with_ext_query
-            .order(order)
             .load::<(Task, ExtTask)>(&connection)
             .expect("Error loading tasks"),
         Some(source) => tasks_with_ext_query
