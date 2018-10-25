@@ -22,7 +22,7 @@ fn main() {
 
     let connection = establish_connection();
 
-    let tasks_with_ext_query = tasks.inner_join(ext_tasks);
+    let tasks_with_ext_query = tasks.inner_join(ext_tasks).filter(done_at.is_null());
 
     println!(
         "{}",
