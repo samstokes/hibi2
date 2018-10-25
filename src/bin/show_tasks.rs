@@ -18,7 +18,6 @@ fn main() {
     let ext_source = env::args().nth(1);
     let ext_source_hask =
         ext_source.map(|s| format!("ExternalSourceName {{unExternalSourceName = \"{}\"}}", s));
-    println!("{:?}", ext_source_hask);
 
     let connection = establish_connection();
 
@@ -31,7 +30,7 @@ fn main() {
 
     let tasks_with_ext = match ext_source_hask {
         None => tasks_with_ext_query
-            .limit(5)
+            .order(order)
             .load::<(Task, ExtTask)>(&connection)
             .expect("Error loading tasks"),
         Some(source) => tasks_with_ext_query
