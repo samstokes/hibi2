@@ -6,9 +6,11 @@ edition = "2018"
 
 [dependencies]
 diesel = { version = "1.0.0", features = ["postgres", "chrono"] }
-dotenv = "0.9.0"
 chrono = "0.4.6"
 regex = "1"
 lazy_static = "1.1.0"
 simple-error = "0.1.9"
 clap = "2.32.0"
+
+[target.'cfg(debug_assertions)'.dependencies]
+dotenv = "0.9.0"
