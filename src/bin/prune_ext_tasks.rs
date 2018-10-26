@@ -16,6 +16,8 @@ fn main() {
     use hibi2::schema::tasks::dsl::*;
     use hibi2::schema::users::dsl::*;
 
+    let _guard = init_sentry();
+
     let matches = App::new("prune_ext_tasks")
         .arg(
             Arg::with_name("USER")
