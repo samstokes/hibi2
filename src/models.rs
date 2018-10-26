@@ -92,8 +92,8 @@ impl fmt::Display for Task {
         };
         write!(
             f,
-            "Task{}{} \"{}\" scheduled for {}{}",
-            schedule, is_ext, self.title, scheduled, done
+            "Task {}{}{} \"{}\" scheduled for {}{}",
+            self.id, schedule, is_ext, self.title, scheduled, done
         )
     }
 }
@@ -128,7 +128,8 @@ impl fmt::Display for ExtTask {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "Ext task {} {}",
+            "ExtTask {} [{} {}]",
+            self.id,
             from_hask_newtype("ExternalSourceName", &self.ext_source_name)
                 .map_err(|_| fmt::Error)?,
             from_hask_newtype("ExternalIdent", &self.ext_id).map_err(|_| fmt::Error)?
@@ -147,6 +148,6 @@ pub struct User {
 
 impl fmt::Display for User {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "User {}", self.ident)
+        write!(f, "User {} <{}>", self.id, self.ident)
     }
 }
