@@ -1,1 +1,1 @@
-release: ./target/release/diesel migration run
+release: ./bin/diesel migration run
