@@ -1,1 +1,1 @@
-release: ./bin/diesel migration run
+release: if test -x ./bin/diesel; then ./bin/diesel migration run; fi
