@@ -1,15 +1,13 @@
-extern crate diesel;
 extern crate hibi2;
 
 use std::env;
-
-use self::diesel::dsl::{any, delete};
-use self::diesel::prelude::*;
 
 use self::hibi2::*;
 use self::models::*;
 
 use chrono::FixedOffset;
+use diesel::dsl::{any, delete};
+use diesel::prelude::*;
 use diesel::{debug_query, pg::Pg};
 
 static USAGE: &'static str = "Usage: prune_ext_tasks <email> <ext_source>";
