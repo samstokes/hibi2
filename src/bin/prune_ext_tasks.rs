@@ -1,29 +1,45 @@
+extern crate clap;
 extern crate hibi2;
-
-use std::env;
 
 use self::hibi2::*;
 use self::models::*;
 
 use chrono::FixedOffset;
+use clap::{App, Arg};
 use diesel::dsl::{any, delete};
 use diesel::prelude::*;
 use diesel::{debug_query, pg::Pg};
-
-static USAGE: &'static str = "Usage: prune_ext_tasks <email> <ext_source>";
+use std::process;
 
 fn main() {
     use hibi2::schema::ext_tasks::dsl::*;
     use hibi2::schema::tasks::dsl::*;
     use hibi2::schema::users::dsl::*;
 
-    let user_ident = env::args()
-        .nth(1)
-        .expect(&format!("please specify user email\n{}", USAGE));
-    let ext_source = env::args()
-        .nth(2)
-        .expect(&format!("please specify ext_source.\n{}", USAGE));
+    let matches = App::new("prune_ext_tasks")
+        .arg(
+            Arg::with_name("USER")
+                .help("ident of the user whose tasks to prune")
+                .required(true)
+                .index(1),
+        )
+        .arg(
+            Arg::with_name("SOURCE")
+                .help("ext_source of the tasks to prune")
+                .required(true)
+                .index(2),
+        )
+        .arg(
+            Arg::with_name("actually")
+                .help("whether to actually delete things")
+                .long("actually"),
+        )
+        .get_matches();
+
+    let user_ident = matches.value_of("USER").unwrap();
+    let ext_source = matches.value_of("SOURCE").unwrap();
     let ext_source_hask = to_hask_newtype("ExternalSourceName", &ext_source);
+    let actually = matches.is_present("actually");
 
     let connection = establish_connection();
 
@@ -62,6 +78,11 @@ fn main() {
         }
     }
 
+    if stale_task_ids.is_empty() {
+        println!("No stale tasks, nothing to do.");
+        process::exit(0);
+    }
+
     let delete_task_query = delete(
         Task::belonging_to(&user).filter(hibi2::schema::tasks::dsl::id.eq(any(stale_task_ids))),
     );
@@ -73,15 +94,19 @@ fn main() {
     );
     println!("{}", debug_query::<Pg, _>(&delete_ext_task_query));
 
-    connection
-        .transaction::<(), diesel::result::Error, _>(|| {
-            println!("{} tasks deleted", delete_task_query.execute(&connection)?);
-            println!(
-                "{} ext_tasks deleted",
-                delete_ext_task_query.execute(&connection)?
-            );
+    if actually {
+        connection
+            .transaction::<(), diesel::result::Error, _>(|| {
+                println!("{} tasks deleted", delete_task_query.execute(&connection)?);
+                println!(
+                    "{} ext_tasks deleted",
+                    delete_ext_task_query.execute(&connection)?
+                );
 
-            Ok(())
-        })
-        .expect("failed to delete tasks");
+                Ok(())
+            })
+            .expect("failed to delete tasks");
+    } else {
+        println!("Not deleting tasks because --actually was not specified.");
+    }
 }
