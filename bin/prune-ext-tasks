@@ -1,0 +1,2 @@
+#!/bin/bash
+exec ./target/release/prune_ext_tasks "${USER_IDENT?must be set}" "${EXT_SOURCE?must be set}" "$@"
