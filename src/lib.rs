@@ -3,6 +3,8 @@ extern crate diesel;
 extern crate dotenv;
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate simple_error;
 
 pub mod models;
 pub mod schema;

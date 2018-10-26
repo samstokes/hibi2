@@ -13,6 +13,8 @@ use diesel::{
     sql_types,
 };
 
+use simple_error::SimpleResult;
+
 #[derive(Debug, FromSqlRow)]
 pub enum Schedule {
     Once,
@@ -107,9 +109,30 @@ pub struct ExtTask {
     pub ext_status: Option<String>,
 }
 
+pub fn to_hask_newtype(name: &str, s: &str) -> String {
+    format!("{} {{un{} = \"{}\"}}", name, name, s)
+}
+static HASK_NEWTYPE_SUFFIX: &'static str = "\"}";
+static HASK_NEWTYPE_SUFFIX_LEN: usize = 2;
+pub fn from_hask_newtype(name: &str, s: &str) -> SimpleResult<String> {
+    let prefix = format!("{} {{un{} = \"", name, name);
+    if !s.starts_with(&prefix) || !s.ends_with(HASK_NEWTYPE_SUFFIX) {
+        bail!("not formatted like a Haskell newtype: {:?}", s)
+    }
+    let real_start = prefix.len();
+    let real_end = s.len() - HASK_NEWTYPE_SUFFIX_LEN;
+    Ok(s[real_start..real_end].into())
+}
+
 impl fmt::Display for ExtTask {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Ext task {} {}", self.ext_source_name, self.ext_id)
+        write!(
+            f,
+            "Ext task {} {}",
+            from_hask_newtype("ExternalSourceName", &self.ext_source_name)
+                .map_err(|_| fmt::Error)?,
+            from_hask_newtype("ExternalIdent", &self.ext_id).map_err(|_| fmt::Error)?
+        )
     }
 }
 

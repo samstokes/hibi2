@@ -25,10 +25,7 @@ fn main() {
     let ext_source = env::args()
         .nth(2)
         .expect(&format!("please specify ext_source.\n{}", USAGE));
-    let ext_source_hask = format!(
-        "ExternalSourceName {{unExternalSourceName = \"{}\"}}",
-        ext_source
-    );
+    let ext_source_hask = to_hask_newtype("ExternalSourceName", &ext_source);
 
     let connection = establish_connection();
 
