@@ -38,7 +38,7 @@ fn main() {
 
     let user: User = user_query.first(&connection).expect("error loading user");
     let offset = user.time_zone_offset();
-    println!("{:?} with time zone {:?}", user, offset);
+    println!("{} with time zone {}", user, offset);
 
     let tasks_with_ext_query = Task::belonging_to(&user)
         .inner_join(ext_tasks)
@@ -59,11 +59,11 @@ fn main() {
         let zoned_task = task.in_time_zone::<FixedOffset>(&offset);
         let stale = zoned_task.is_overdue_now();
         if stale {
-            println!("stale: {:?}, {:?}", task, ext_task);
+            println!("stale: {}, {}", task, ext_task);
             stale_task_ids.push(task.id);
             stale_ext_task_ids.push(ext_task.id);
         } else {
-            println!("not stale: {:?}, {:?}", task, ext_task);
+            println!("not stale: {}, {}", task, ext_task);
         }
     }
 

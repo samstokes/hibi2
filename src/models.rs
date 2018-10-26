@@ -2,6 +2,8 @@
 
 use super::schema::*;
 
+use std::{fmt, str};
+
 extern crate chrono;
 use chrono::NaiveDateTime;
 
@@ -19,7 +21,19 @@ pub enum Schedule {
     Fortnightly,
 }
 
-impl std::str::FromStr for Schedule {
+impl fmt::Display for Schedule {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use self::Schedule::*;
+        match self {
+            Once => write!(f, "Once"),
+            Daily => write!(f, "Daily"),
+            Weekly => write!(f, "Weekly"),
+            Fortnightly => write!(f, "Fortnightly"),
+        }
+    }
+}
+
+impl str::FromStr for Schedule {
     type Err = String;
 
     fn from_str(text: &str) -> Result<Self, String> {
@@ -57,6 +71,31 @@ pub struct Task {
     pub ext_task_id: Option<i64>,
 }
 
+static APPROX_DATETIME_FORMAT: &'static str = "%Y-%m-%d %l%P UTC";
+
+impl fmt::Display for Task {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let scheduled = self.scheduled_for.format(APPROX_DATETIME_FORMAT);
+        let done = self.done_at.map_or("".into(), |done_at| {
+            format!(", done at {}", done_at.format(APPROX_DATETIME_FORMAT))
+        });
+        let schedule = match self.schedule {
+            Schedule::Once => "".into(),
+            _ => format!(" ({})", self.schedule),
+        };
+        let is_ext = if self.ext_task_id.is_none() {
+            ""
+        } else {
+            " (ext)"
+        };
+        write!(
+            f,
+            "Task{}{} \"{}\" {}{}",
+            schedule, is_ext, self.title, scheduled, done
+        )
+    }
+}
+
 #[derive(Identifiable, Queryable, Associations, Debug)]
 #[belongs_to(User)]
 pub struct ExtTask {
@@ -68,6 +107,12 @@ pub struct ExtTask {
     pub ext_status: Option<String>,
 }
 
+impl fmt::Display for ExtTask {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Ext task {} {}", self.ext_source_name, self.ext_id)
+    }
+}
+
 #[derive(Identifiable, Queryable, Debug)]
 pub struct User {
     pub id: i64,
@@ -75,4 +120,10 @@ pub struct User {
     pub password: Option<String>,
     pub time_zone: Option<String>,
     pub features: String, // TODO
+}
+
+impl fmt::Display for User {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "User {}", self.ident)
+    }
 }
