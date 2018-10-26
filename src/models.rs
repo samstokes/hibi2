@@ -57,9 +57,11 @@ pub struct Task {
     pub ext_task_id: Option<i64>,
 }
 
-#[derive(Queryable, Debug)]
+#[derive(Identifiable, Queryable, Associations, Debug)]
+#[belongs_to(User)]
 pub struct ExtTask {
     pub id: i64,
+    pub user_id: i64,
     pub ext_id: String,
     pub ext_source_name: String,
     pub ext_url: Option<String>,

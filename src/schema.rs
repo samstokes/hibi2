@@ -27,7 +27,8 @@ table! {
     ext_tasks (id) {
         #[sql_name = "bigid"]
         id -> Int8,
-        //user -> Int8,
+        #[sql_name = "user"]
+        user_id -> Int8,
         ext_id -> Varchar,
         ext_source_name -> Varchar,
         ext_url -> Nullable<Varchar>,
@@ -86,7 +87,7 @@ table! {
 
 //joinable!(email -> user (user));
 //joinable!(estimate -> task (task));
-//joinable!(ext_task -> user (user));
+joinable!(ext_tasks -> users (user_id));
 //joinable!(note -> task (task));
 //joinable!(plan -> user (user));
 joinable!(tasks -> ext_tasks (ext_task_id));
