@@ -71,7 +71,7 @@ pub struct Task {
     pub ext_task_id: Option<i64>,
 }
 
-static APPROX_DATETIME_FORMAT: &'static str = "%Y-%m-%d %l%P UTC";
+static APPROX_DATETIME_FORMAT: &'static str = "%Y-%m-%d %-I%P UTC";
 
 impl fmt::Display for Task {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -90,7 +90,7 @@ impl fmt::Display for Task {
         };
         write!(
             f,
-            "Task{}{} \"{}\" {}{}",
+            "Task{}{} \"{}\" scheduled for {}{}",
             schedule, is_ext, self.title, scheduled, done
         )
     }
