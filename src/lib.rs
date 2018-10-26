@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate diesel;
+#[cfg(debug_assertions)]
 extern crate dotenv;
 #[macro_use]
 extern crate lazy_static;
