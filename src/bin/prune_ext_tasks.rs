@@ -9,12 +9,18 @@ use clap::{App, Arg};
 use diesel::dsl::{any, delete};
 use diesel::prelude::*;
 use diesel::{debug_query, pg::Pg};
+#[cfg(debug_assertions)]
+use dotenv::dotenv;
+
 use std::process;
 
 fn main() {
     use hibi2::schema::ext_tasks::dsl::*;
     use hibi2::schema::tasks::dsl::*;
     use hibi2::schema::users::dsl::*;
+
+    #[cfg(debug_assertions)]
+    dotenv().ok();
 
     let _guard = init_sentry();
 
