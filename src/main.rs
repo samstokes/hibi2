@@ -33,16 +33,6 @@ fn index() -> &'static str {
     "Hello, world!"
 }
 
-fn fake_auth(pg: &PgConnection) -> User {
-    const HARDCODED_USER_ID: i64 = 4;
-
-    let user_query = users.find(HARDCODED_USER_ID);
-    println!("{}", debug_query::<Pg, _>(&user_query));
-    user_query
-        .first::<User>(pg)
-        .expect("error loading hardcoded user")
-}
-
 #[derive(Clone, Copy, Debug)]
 enum TaskSetType {
     Today,
@@ -149,6 +139,34 @@ impl<Tz: TimeZone> TaskSet<Tz> {
     }
 }
 
+struct FakeUser(User);
+
+impl<'a, 'r> FromRequest<'a, 'r> for FakeUser {
+    type Error = String;
+
+    fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
+        let db: HibiDbConn = request
+            .guard()
+            .map_failure(|(s, e)| (s, format!("{:?}", e)))?;
+
+        const HARDCODED_USER_ID: i64 = 4;
+
+        let user_query = users.find(HARDCODED_USER_ID);
+        println!("{}", debug_query::<Pg, _>(&user_query));
+        match user_query.first::<User>(&db as &PgConnection).optional() {
+            Ok(Some(user)) => Outcome::Success(FakeUser(user)),
+            Ok(None) => Outcome::Failure((
+                Status::Unauthorized,
+                "couldn't authenticate even with hardcoded user creds!".into(),
+            )),
+            Err(e) => Outcome::Failure((
+                Status::InternalServerError,
+                format!("error loading user: {:?}", e),
+            )),
+        }
+    }
+}
+
 #[get("/tasks?<q>&<days>")]
 #[allow(unused_variables)] // task_set uses them, can't use underscore or route won't match
 fn list_tasks(
@@ -156,13 +174,12 @@ fn list_tasks(
     days: Option<u8>,
     task_set: TaskSet<Local>,
     db: HibiDbConn,
+    user: FakeUser,
 ) -> content::Json<String> {
     println!("task_set={:?}", task_set);
 
-    let user = fake_auth(&db);
-
     let requested_tasks: Vec<String> = task_set
-        .query(&db, &user)
+        .query(&db, &user.0)
         // TODO
         .into_iter()
         .map(|t| t.title)
