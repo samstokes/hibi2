@@ -1,0 +1,2 @@
+upgrade rustc, rocket so i can install rocket_cors
+turn error responses into json
