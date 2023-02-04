@@ -6,6 +6,7 @@ use std::{fmt, str};
 
 extern crate chrono;
 use chrono::NaiveDateTime;
+use serde::Serialize;
 
 use diesel::{
     deserialize::{FromSql, Result as DResult},
@@ -15,7 +16,7 @@ use diesel::{
 
 use simple_error::SimpleResult;
 
-#[derive(Debug, FromSqlRow)]
+#[derive(Debug, FromSqlRow, Serialize)]
 pub enum Schedule {
     Once,
     Daily,
@@ -58,7 +59,7 @@ impl FromSql<sql_types::Text, Pg> for Schedule {
     }
 }
 
-#[derive(Identifiable, Queryable, Associations, Debug)]
+#[derive(Identifiable, Queryable, Associations, Debug, Serialize)]
 #[belongs_to(User)]
 pub struct Task {
     pub id: i32,
